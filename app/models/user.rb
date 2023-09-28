@@ -14,11 +14,14 @@ class User < ApplicationRecord
   has_many :notification_timings, through: :user_notification_timings
   has_one_attached :avatar
 
+  enum gender: { other: 0, woman: 1, man: 2 }
+
   validates :password, length: { minimum: 3 }, if: -> { new_record? || changes[:crypted_password] }
   validates :password, confirmation: true, if: -> { new_record? || changes[:crypted_password] }
   validates :password_confirmation, presence: true, if: -> { new_record? || changes[:crypted_password] }
 
   validates :email, uniqueness: true
+  validates :gender, presence: true
 
   scope :allowing_created_event_notification,
         -> { joins(:notification_timings).merge(NotificationTiming.created_event) }
@@ -59,6 +62,10 @@ class User < ApplicationRecord
 
   def own?(event)
     event.user_id == id
+  end
+
+  def woman?
+    gender == 'woman'
   end
 
   def allow_created_event_notification?
